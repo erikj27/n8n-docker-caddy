@@ -1,0 +1,13 @@
+# Exclude environment file
+.env
+
+# Exclude backup folders and logs
+backups/
+backup_*.log
+logs/
+
+# Caddy files
+caddy_config/
+caddy/
+Caddyfile
+caddy/autosave.json
