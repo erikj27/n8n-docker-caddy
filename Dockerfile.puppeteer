@@ -1,0 +1,29 @@
+FROM alpine:latest
+
+USER root
+
+# Install necessary dependencies
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    udev \
+    ttf-liberation \
+    font-noto-emoji \
+    nodejs \
+    npm \
+    bash
+
+# Set Puppeteer environment variables
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+# Install Puppeteer
+RUN npm install -g puppeteer && \
+    npm list -g --depth=0  # Check if it's installed correctly
+
+CMD ["node", "-e", "console.log('Puppeteer container is running'); setInterval(() => {}, 1000)"]

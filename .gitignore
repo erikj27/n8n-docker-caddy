@@ -1,0 +1,11 @@
+# Exclude environment file
+.env
+
+# Exclude backup folders (adjust the folder name if needed)
+backups/
+backup_*.log
+
+logs/
+caddy_config/
+caddy_config/caddy
+
