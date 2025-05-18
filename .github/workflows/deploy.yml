@@ -24,12 +24,25 @@ jobs:
                   NODE_FUNCTION_EXTERNAL: ${{ vars.NODE_FUNCTION_EXTERNAL || '' }}
                   BROWSERLESS_TOKEN: ${{ secrets.BROWSERLESS_TOKEN }}
                   SERVER_USER: ${{ secrets.SERVER_USER }}
+                  SUBDOMAIN: n8n
 
             - name: Process Caddyfile template
               run: |
-                  sed -e "s/{SUBDOMAIN}/${{ env.SUBDOMAIN }}/g" -e "s/{DOMAIN}/${{ secrets.DOMAIN_NAME }}/g" caddy_config/Caddyfile.template > caddy_config/Caddyfile.processed
+                  sed -e "s/{SUBDOMAIN}/$SUBDOMAIN/g" -e "s/{DOMAIN}/${{ secrets.DOMAIN_NAME }}/g" caddy_config/Caddyfile.template > caddy_config/Caddyfile.processed
               env:
                   SUBDOMAIN: n8n
+
+            - name: Save .env and Caddyfile content
+              run: |
+                  echo "DOTENV_CONTENT<<EOF" >> $GITHUB_ENV
+                  cat .env >> $GITHUB_ENV
+                  echo "EOF" >> $GITHUB_ENV
+
+                  echo "CADDYFILE_CONTENT<<EOF" >> $GITHUB_ENV
+                  cat caddy_config/Caddyfile.processed >> $GITHUB_ENV
+                  echo "EOF" >> $GITHUB_ENV
+
+                  echo "SUBDOMAIN=n8n" >> $GITHUB_ENV
 
             - name: Deploy to Server
               uses: appleboy/ssh-action@master
@@ -44,6 +57,7 @@ jobs:
                       # Copy the generated .env file
                       cat << 'EOF' > .env
                       ${{ env.DOTENV_CONTENT }}
+                      DATA_FOLDER=.
                       EOF
 
                       # Copy the processed Caddyfile
@@ -57,15 +71,3 @@ jobs:
                       # Restart the services
                       docker-compose down
                       docker-compose up -d
-
-            - name: Save .env and Caddyfile content
-              run: |
-                  echo "DOTENV_CONTENT<<EOF" >> $GITHUB_ENV
-                  cat .env >> $GITHUB_ENV
-                  echo "EOF" >> $GITHUB_ENV
-
-                  echo "CADDYFILE_CONTENT<<EOF" >> $GITHUB_ENV
-                  cat caddy_config/Caddyfile.processed >> $GITHUB_ENV
-                  echo "EOF" >> $GITHUB_ENV
-
-                  echo "SUBDOMAIN=n8n" >> $GITHUB_ENV

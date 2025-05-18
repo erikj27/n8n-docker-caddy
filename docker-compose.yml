@@ -7,8 +7,8 @@ services:
             - '443:443'
         volumes:
             - caddy_data:/data
-            - ${DATA_FOLDER}/caddy_config:/config
-            - ${DATA_FOLDER}/caddy_config/Caddyfile:/etc/caddy/Caddyfile
+            - ./caddy_config:/config
+            - ./caddy_config/Caddyfile:/etc/caddy/Caddyfile
 
     frontend:
         image: ${DOCKER_USERNAME}/${FRONTEND_IMAGE_NAME}:${FRONTEND_IMAGE_TAG}
@@ -54,7 +54,7 @@ services:
             - PUPPETEER_WS_ENDPOINT=ws://browserless:3000?token=${BROWSERLESS_TOKEN}
         volumes:
             - n8n_data:/home/node/.n8n
-            - ${DATA_FOLDER}/local_files:/files
+            - ./local_files:/files
 
     browserless:
         image: ghcr.io/browserless/chromium
