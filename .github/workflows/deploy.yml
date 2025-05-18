@@ -50,7 +50,6 @@ jobs:
 
                       # Copy the generated .env file
                       echo "${{ env.DOTENV_CONTENT }}" | base64 -d > .env
-                      echo "DATA_FOLDER=." >> .env
 
                       # Copy the processed Caddyfile
                       echo "${{ env.CADDYFILE_CONTENT }}" | base64 -d > caddy_config/Caddyfile
