@@ -1,5 +1,9 @@
 {SUBDOMAIN}.{DOMAIN} {
-    reverse_proxy n8n-docker-caddy-n8n-1:5678 {
+    reverse_proxy n8n:5678 {
       flush_interval -1
     }
-} 
+}
+
+{DOMAIN} {
+    reverse_proxy frontend:3000
+}
