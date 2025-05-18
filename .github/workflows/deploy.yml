@@ -34,13 +34,13 @@ jobs:
 
             - name: Save .env and Caddyfile content
               run: |
-                  echo "DOTENV_CONTENT<<EOF" >> $GITHUB_ENV
+                  echo 'DOTENV_CONTENT<<DELIMITER' >> $GITHUB_ENV
                   cat .env >> $GITHUB_ENV
-                  echo "EOF" >> $GITHUB_ENV
+                  echo 'DELIMITER' >> $GITHUB_ENV
 
-                  echo "CADDYFILE_CONTENT<<EOF" >> $GITHUB_ENV
+                  echo 'CADDYFILE_CONTENT<<DELIMITER' >> $GITHUB_ENV
                   cat caddy_config/Caddyfile.processed >> $GITHUB_ENV
-                  echo "EOF" >> $GITHUB_ENV
+                  echo 'DELIMITER' >> $GITHUB_ENV
 
                   echo "SUBDOMAIN=n8n" >> $GITHUB_ENV
 
