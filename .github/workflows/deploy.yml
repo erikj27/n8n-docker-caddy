@@ -34,14 +34,8 @@ jobs:
 
             - name: Save .env and Caddyfile content
               run: |
-                  echo 'DOTENV_CONTENT<<DELIMITER' >> $GITHUB_ENV
-                  cat .env >> $GITHUB_ENV
-                  echo 'DELIMITER' >> $GITHUB_ENV
-
-                  echo 'CADDYFILE_CONTENT<<DELIMITER' >> $GITHUB_ENV
-                  cat caddy_config/Caddyfile.processed >> $GITHUB_ENV
-                  echo 'DELIMITER' >> $GITHUB_ENV
-
+                  echo "DOTENV_CONTENT=$(base64 -w 0 < .env)" >> $GITHUB_ENV
+                  echo "CADDYFILE_CONTENT=$(base64 -w 0 < caddy_config/Caddyfile.processed)" >> $GITHUB_ENV
                   echo "SUBDOMAIN=n8n" >> $GITHUB_ENV
 
             - name: Deploy to Server
@@ -55,15 +49,11 @@ jobs:
                       cd ~/n8n-docker-caddy
 
                       # Copy the generated .env file
-                      cat << 'EOF' > .env
-                      ${{ env.DOTENV_CONTENT }}
-                      DATA_FOLDER=.
-                      EOF
+                      echo "${{ env.DOTENV_CONTENT }}" | base64 -d > .env
+                      echo "DATA_FOLDER=." >> .env
 
                       # Copy the processed Caddyfile
-                      cat << 'EOF' > caddy_config/Caddyfile
-                      ${{ env.CADDYFILE_CONTENT }}
-                      EOF
+                      echo "${{ env.CADDYFILE_CONTENT }}" | base64 -d > caddy_config/Caddyfile
 
                       # Login to Docker Hub for private images
                       echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
