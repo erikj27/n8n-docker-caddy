@@ -1,0 +1,71 @@
+name: Deploy to Server
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+
+            - name: Create .env file
+              run: |
+                  envsubst < .env.template > .env
+              env:
+                  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+                  FRONTEND_IMAGE_NAME: ${{ secrets.FRONTEND_IMAGE_NAME }}
+                  FRONTEND_IMAGE_TAG: ${{ secrets.FRONTEND_IMAGE_TAG || 'latest' }}
+                  DOMAIN_NAME: ${{ secrets.DOMAIN_NAME }}
+                  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+                  NODE_FUNCTION_EXTERNAL: ${{ vars.NODE_FUNCTION_EXTERNAL || '' }}
+                  BROWSERLESS_TOKEN: ${{ secrets.BROWSERLESS_TOKEN }}
+                  SERVER_USER: ${{ secrets.SERVER_USER }}
+
+            - name: Process Caddyfile template
+              run: |
+                  sed -e "s/{SUBDOMAIN}/${{ env.SUBDOMAIN }}/g" -e "s/{DOMAIN}/${{ secrets.DOMAIN_NAME }}/g" caddy_config/Caddyfile.template > caddy_config/Caddyfile.processed
+              env:
+                  SUBDOMAIN: n8n
+
+            - name: Deploy to Server
+              uses: appleboy/ssh-action@master
+              with:
+                  host: ${{ secrets.SERVER_HOST }}
+                  username: ${{ secrets.SERVER_USER }}
+                  key: ${{ secrets.SERVER_SSH_KEY }}
+                  script: |
+                      mkdir -p ~/n8n-docker-caddy/caddy_config
+                      cd ~/n8n-docker-caddy
+
+                      # Copy the generated .env file
+                      cat << 'EOF' > .env
+                      ${{ env.DOTENV_CONTENT }}
+                      EOF
+
+                      # Copy the processed Caddyfile
+                      cat << 'EOF' > caddy_config/Caddyfile
+                      ${{ env.CADDYFILE_CONTENT }}
+                      EOF
+
+                      # Login to Docker Hub for private images
+                      echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+                      # Restart the services
+                      docker-compose down
+                      docker-compose up -d
+
+            - name: Save .env and Caddyfile content
+              run: |
+                  echo "DOTENV_CONTENT<<EOF" >> $GITHUB_ENV
+                  cat .env >> $GITHUB_ENV
+                  echo "EOF" >> $GITHUB_ENV
+
+                  echo "CADDYFILE_CONTENT<<EOF" >> $GITHUB_ENV
+                  cat caddy_config/Caddyfile.processed >> $GITHUB_ENV
+                  echo "EOF" >> $GITHUB_ENV
+
+                  echo "SUBDOMAIN=n8n" >> $GITHUB_ENV

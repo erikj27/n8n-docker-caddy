@@ -1,11 +1,14 @@
-# Exclude environment file
+# Environment files
 .env
 
-# Exclude backup folders (adjust the folder name if needed)
+# Local certs and data
+caddy_config/Caddyfile
+caddy_config/caddy/
+n8n_data/
 backups/
 backup_*.log
-
+data/
 logs/
-caddy_config/
-caddy_config/caddy
 
+# OS files
+.DS_Store

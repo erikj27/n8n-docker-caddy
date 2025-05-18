@@ -11,10 +11,12 @@ services:
             - ${DATA_FOLDER}/caddy_config/Caddyfile:/etc/caddy/Caddyfile
 
     frontend:
-        image: ${DOCKER_USERNAME}/we-herd-cats:latest
+        image: ${DOCKER_USERNAME}/${FRONTEND_IMAGE_NAME}:${FRONTEND_IMAGE_TAG}
         restart: always
         environment:
             - NODE_ENV=production
+        depends_on:
+            - n8n
 
     postgres:
         image: postgres:14
@@ -47,7 +49,7 @@ services:
             - DB_POSTGRESDB_DATABASE=${DB_POSTGRESDB_DATABASE}
             - DB_POSTGRESDB_USER=${DB_POSTGRESDB_USER}
             - DB_POSTGRESDB_PASSWORD=${DB_POSTGRESDB_PASSWORD}
-            - NODE_FUNCTION_ALLOW_BUILTIN=*
+            - NODE_FUNCTION_ALLOW_BUILTIN=${NODE_FUNCTION_ALLOW_BUILTIN}
             - NODE_FUNCTION_ALLOW_EXTERNAL=${NODE_FUNCTION_ALLOW_EXTERNAL}
             - PUPPETEER_WS_ENDPOINT=ws://browserless:3000?token=${BROWSERLESS_TOKEN}
         volumes:
